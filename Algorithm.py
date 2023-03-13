@@ -1,53 +1,40 @@
-from itertools import product
-
 import os.path
 import json
 import numpy
 import sympy
-from multiset import FrozenMultiset
-
 import time
+from itertools import product
+from multiset import FrozenMultiset
 
 start_time = time.time()
 
-AllSolutions = {2: [[sympy.Rational(0,1), sympy.Rational(1,2)]]}
-ShiftedSolutions = {1: [[sympy.Rational(0,1)]]}
 
-# # to initialize your dict
-# if os.path.isfile('All_Solutions.txt'):
-#     with open('All_Solutions.txt', 'r') as f:
-#         AllSolutions = json.load(f)
-
-
-
-def Shift(unshifted):
+def shift(unshifted):
     Shifted_list = []
     for k in range(0, len(unshifted)):
         Shifted_list.append((unshifted[k] - unshifted[0]) % 1)
     return Shifted_list
 
-def Shifted(unshifted):
+def shifted(unshifted):
     Shifted_list = []
     for k in range(1, len(unshifted)):
         Shifted_list.append((unshifted[k] - unshifted[0] + sympy.Rational(1,2))% 1)
     return Shifted_list
 
-def Cyclotomic(mylist, k , t):
+def cyclotomic(mylist, k , t):
     new_list = []
     for s in range(len(mylist)):
         new_list.append(mylist[s] + sympy.Rational(k,t))
     return new_list
 
-def Create(old_solutions):
+def create(old_solutions):
     new_solution = []
     t = len(old_solutions)
     for k in range(0, t):
-        new_solution.extend(Cyclotomic(old_solutions[k],k, t))
+        new_solution.extend(cyclotomic(old_solutions[k],k, t))
     return new_solution
 
-
-
-def Valid_Partition(k,p):
+def validPartition(k,p):
 
     def possible_degree_list(c):
         for s in range(0,p):
@@ -62,7 +49,7 @@ def Valid_Partition(k,p):
     return dedupped_possible_c_values
 
 
-def CrossSum(c):
+def crossSum(c):
     sums = []
     for i in range(len(c)):
         for j in range(len(c)):
@@ -70,84 +57,98 @@ def CrossSum(c):
     return sorted(sums)
 
 
-def solve(n):
+def solve(n, all_old_dict, shifted_old_dict):
+    all_solutions = all_old_dict
+    shifted_solutions = shifted_old_dict
 
-    for k in range(3, n + 1):
+    for k in range(max(all_solutions.keys()) + 1, n + 1):
         k_TempSolutions = []
         for p in sympy.primerange(3,k + 1):
-            for c in Valid_Partition(k,p):
-                partitions = [ShiftedSolutions[list(c).count(d)] for d in range(p)]
+            for c in validPartition(k,p):
+                partitions = [shifted_solutions[list(c).count(d)] for d in range(p)]
                 for old_solutions in list(product(*partitions)):
-                    k_TempSolutions.append(Shift(list(Create(old_solutions))))
+                    k_TempSolutions.append(shift(list(create(old_solutions))))
         p = 2
         k_2_TempSolutions = []
-        for c in Valid_Partition(k,p):
+        for c in validPartition(k,p):
             if list(c).count(0) in range(1,p-1):
-                partitions = [ShiftedSolutions[list(c).count(d)] for d in range(p)]
+                partitions = [shifted_solutions[list(c).count(d)] for d in range(p)]
                 for old_solutions in list(product(*partitions)):
-                    k_2_TempSolutions.append(Shift(list(Create(old_solutions))))
+                    k_2_TempSolutions.append(shift(list(create(old_solutions))))
 
         k_TempSolutions = k_TempSolutions + k_2_TempSolutions
 
         def Primitive(c):
             for l in range(2,k):
-                for d in AllSolutions[l]:
+                for d in all_solutions[l]:
                     if set(d) <= set(c):
                         return False
             return True
 
         Primitive_k_TempSolutions = list(filter(Primitive, k_TempSolutions))
 
-        # print(Primitive_k_TempSolutions)
-
-        # if len(Primitive_k_TempSolutions) > 0:
-        #     FinalTempSolutions = [Primitive_k_TempSolutions[0]]
-
         UniqueSolutions = []
-        [UniqueSolutions.append(c) for c in Primitive_k_TempSolutions if c not in UniqueSolutions]
+        for c in Primitive_k_TempSolutions:
+            if c not in UniqueSolutions:
+                UniqueSolutions.append(c)
 
-
-        FinalTempSolutions = []
+        final_temp_solutions = []
 
         if len(UniqueSolutions) > 0:
-            FinalTempSolutions.append(UniqueSolutions[0])
+            final_temp_solutions.append(UniqueSolutions[0])
         
         CrossSumSolutions = []
 
-        for c in FinalTempSolutions:
-            CrossSumSolutions.append(CrossSum(c))
+        for c in final_temp_solutions:
+            CrossSumSolutions.append(crossSum(c))
 
         for c in UniqueSolutions:
-                if CrossSum(c) in CrossSumSolutions:
-                    continue
-                else:
-                    FinalTempSolutions.append(c)
-                    CrossSumSolutions.append(CrossSum(c))
+            if not crossSum(c) in CrossSumSolutions:
+                final_temp_solutions.append(c)
+                CrossSumSolutions.append(crossSum(c))
 
 
-        AllSolutions[k] = FinalTempSolutions
+        all_solutions[k] = final_temp_solutions
 
-        k_ShiftedSolutions = []
+        k_ShiftedSolutions = [shifted(c) for c in all_solutions[k]]
 
-        for c in AllSolutions[k]:
-            k_ShiftedSolutions.append(Shifted(c))
-
-        ShiftedSolutions[k - 1] = k_ShiftedSolutions
+        shifted_solutions[k - 1] = k_ShiftedSolutions
         
-    # with open('All_Solutions.txt', 'w') as f:
-    #     json.dump(AllSolutions, f)
-    #     f.write(AllSolutions)
-    #     f.close()
-    
-    return AllSolutions
+    return all_solutions, shifted_solutions
 
+
+def serializeSolutionsDict(json_file, dict):
+    stringyfied_dict = {degree: [[str(number) for number in solution] for solution in solutions] for (degree, solutions) in dict.items()}
+    json_object = json.dumps(stringyfied_dict, indent=4)
+    json_file.write(json_object)
+
+def deserializeSolutionsDict(json_file):
+    old_dict = json.loads(json_file.read())
+    return {int(degree): [[sympy.Rational(number) for number in solution] for solution in solutions] for (degree, solutions) in old_dict.items()}
 
 if __name__ == "__main__":
-    output_dict = solve(int(input('Enter a size: ')))
-    stringyfied_dict =  {degree:[[str(number) for number in solution] for solution in solutions] for (degree, solutions) in output_dict.items()}
-    json_object = json.dumps(stringyfied_dict, indent=4)
+    if os.path.isfile("all_solution_dictionary.json") and os.path.isfile("shifted_solution_dictionary.json"): 
+        all_json_file = open("all_solution_dictionary.json", "r")
+        shifted_json_file = open("shifted_solution_dictionary.json", "r")
 
-    with open("solution_dictionary.json", "w") as outfile:
-        outfile.write(json_object)
+        all_old_dict = deserializeSolutionsDict(all_json_file)
+        shifted_old_dict = deserializeSolutionsDict(shifted_json_file)
+
+        all_json_file.close()
+        shifted_json_file.close()
+    else:
+        all_old_dict = {2: [[sympy.Rational(0,1), sympy.Rational(1,2)]]}
+        shifted_old_dict = {1: [[sympy.Rational(0,1)]]}
+
+    all_json_file = open("all_solution_dictionary.json", "w+")
+    shifted_json_file = open("shifted_solution_dictionary.json", "w+")
+
+    all_solutions, shifted_solutions = solve(int(input('Enter a size: ')), all_old_dict, shifted_old_dict)
+
+    serializeSolutionsDict(all_json_file, all_solutions)
+    serializeSolutionsDict(shifted_json_file, shifted_solutions)
+
+    all_json_file.close()
+    shifted_json_file.close()
 
     print(f'--- {time.time() - start_time} seconds ---')
