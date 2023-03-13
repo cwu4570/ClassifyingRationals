@@ -7,7 +7,6 @@ import numpy
 import sympy
 from multiset import FrozenMultiset
 
-start_time = time.time()
 
 
 def shift(unshifted):
@@ -63,6 +62,8 @@ def cross_sum(c):
 
 
 def solve(n, all_old_dict, shifted_old_dict):
+    start_time = time.time()
+
     all_solutions = all_old_dict
     shifted_solutions = shifted_old_dict
 
@@ -117,6 +118,10 @@ def solve(n, all_old_dict, shifted_old_dict):
         k_ShiftedSolutions = [shifted(c) for c in all_solutions[k]]
 
         shifted_solutions[k - 1] = k_ShiftedSolutions
+    
+    print(f'--- {time.time() - start_time} seconds ---')
+
+    print(all_solutions[n])
 
     return all_solutions, shifted_solutions
 
@@ -158,5 +163,3 @@ if __name__ == "__main__":
 
     all_json_file.close()
     shifted_json_file.close()
-
-    print(f'--- {time.time() - start_time} seconds ---')
