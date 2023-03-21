@@ -2,6 +2,7 @@ import json
 import os.path
 import time
 from itertools import product
+from itertools import permutations
 
 import numpy
 import sympy
@@ -39,24 +40,25 @@ def create(old_solutions):
 
 
 def valid_partition(k, p):
+    possible_values = {(1,) * p}
 
-    def possible_degree_list(c):
-        for s in range(0, p):
-            if s not in c:
-                return False
-        return True
+    for _ in range(k - p):
+        next_possible_values = set()
+        for possible_value in possible_values:
+            for i in range(p):
+                next_possible_value = list(possible_value)
+                next_possible_value[i] += 1
+                next_possible_values.add(tuple(next_possible_value))
 
-    p_fold_product_of_Z_p = list(product(range(p), repeat=k))
-    possible_c_values = list(filter(possible_degree_list, p_fold_product_of_Z_p))
-    dedupped_possible_c_values = set([FrozenMultiset(c) for c in possible_c_values])
+        possible_values = set( next_possible_values)
 
-    return dedupped_possible_c_values
+    return set([FrozenMultiset({i: c[i] for i in range(p)}) for c in possible_values])
 
 
 def cross_sum(c):
     sums = []
-    for i in range(len(c)):
-        for j in range(len(c)):
+    for i in range(int(len(c))):
+        for j in range(int(len(c))):
             sums.append((c[j] - c[i]) % 1)
     return sorted(sums)
 
@@ -82,7 +84,9 @@ def solve(n, all_old_dict, shifted_old_dict):
                 for old_solutions in list(product(*partitions)):
                     k_2_TempSolutions.append(shift(list(create(old_solutions))))
 
+
         k_TempSolutions = k_TempSolutions + k_2_TempSolutions
+
 
         def Primitive(c):
             for l in range(2, k):
@@ -118,6 +122,8 @@ def solve(n, all_old_dict, shifted_old_dict):
         k_ShiftedSolutions = [shifted(c) for c in all_solutions[k]]
 
         shifted_solutions[k - 1] = k_ShiftedSolutions
+
+
     
     print(f'--- {time.time() - start_time} seconds ---')
 
@@ -152,11 +158,11 @@ if __name__ == "__main__":
         all_old_dict = {2: [[sympy.Rational(0, 1), sympy.Rational(1, 2)]]}
         shifted_old_dict = {1: [[sympy.Rational(0, 1)]]}
 
-    all_json_file = open("all_solution_dictionary.json", "w+")
-    shifted_json_file = open("shifted_solution_dictionary.json", "w+")
-
     all_solutions, shifted_solutions = solve(
         int(input('Enter a size: ')), all_old_dict, shifted_old_dict)
+    
+    all_json_file = open("all_solution_dictionary.json", "w+")
+    shifted_json_file = open("shifted_solution_dictionary.json", "w+")
 
     serialize_solutions_dict(all_json_file, all_solutions)
     serialize_solutions_dict(shifted_json_file, shifted_solutions)
