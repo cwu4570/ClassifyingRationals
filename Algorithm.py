@@ -124,10 +124,10 @@ def solve(n, all_old_dict, shifted_old_dict):
         shifted_solutions[k - 1] = k_ShiftedSolutions
 
 
-    
+    print(all_solutions[n])
+
     print(f'--- {time.time() - start_time} seconds ---')
 
-    print(all_solutions[n])
 
     return all_solutions, shifted_solutions
 
