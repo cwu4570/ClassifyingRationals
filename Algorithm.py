@@ -126,6 +126,8 @@ def solve(n, all_old_dict, shifted_old_dict):
 
     print(all_solutions[n])
 
+    print(len(all_solutions[n]), 'total solutions for n = ', n)
+
     print(f'--- {time.time() - start_time} seconds ---')
 
 
