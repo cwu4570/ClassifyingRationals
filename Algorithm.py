@@ -1,16 +1,15 @@
 import json
 import os.path
 import time
-from itertools import product
-from itertools import permutations
+from itertools import permutations, product
 
 import numpy
 import sympy
 from multiset import FrozenMultiset
 
+
 def sublist(lst1, lst2):
     return set(lst1) <= set(lst2)
-
 
 
 def shift(unshifted):
@@ -53,7 +52,7 @@ def valid_partition(k, p):
                 next_possible_value[i] += 1
                 next_possible_values.add(tuple(next_possible_value))
 
-        possible_values = set( next_possible_values)
+        possible_values = set(next_possible_values)
 
     return set([FrozenMultiset({i: c[i] for i in range(p)}) for c in possible_values])
 
@@ -64,7 +63,6 @@ def cross_sum(c):
         for j in range(int(len(c))):
             sums.append((sympy.Rational(c[j]) - sympy.Rational(c[i])) % 1)
     return FrozenMultiset(sorted(sums))
-
 
 
 def solve(n, all_old_dict, shifted_old_dict):
@@ -88,16 +86,15 @@ def solve(n, all_old_dict, shifted_old_dict):
                 for old_solutions in list(product(*partitions)):
                     k_2_TempSolutions.append(shift(list(create(old_solutions))))
 
-
         k_TempSolutions = k_TempSolutions + k_2_TempSolutions
-
 
         def Primitive(c):
             for l in range(2, k):
                 for d in all_solutions[l]:
                     for i in range(len(c)):
-                        shifted_d_list = [sympy.Rational(d[j]) + sympy.Rational(c[i]) for j in range(len(d))]
-                        if sublist(shifted_d_list,c):
+                        shifted_d_list = [sympy.Rational(
+                            d[j]) + sympy.Rational(c[i]) for j in range(len(d))]
+                        if sublist(shifted_d_list, c):
                             return False
             return True
 
@@ -129,13 +126,11 @@ def solve(n, all_old_dict, shifted_old_dict):
 
         shifted_solutions[k - 1] = k_ShiftedSolutions
 
-
     print(all_solutions[n])
 
     print(len(all_solutions[n]), 'total solutions for n = ', n)
 
     print(f'--- {time.time() - start_time} seconds ---')
-
 
     return all_solutions, shifted_solutions
 
@@ -168,7 +163,7 @@ if __name__ == "__main__":
 
     all_solutions, shifted_solutions = solve(
         int(input('Enter a size: ')), all_old_dict, shifted_old_dict)
-    
+
     all_json_file = open("all_solution_dictionary.json", "w+")
     shifted_json_file = open("shifted_solution_dictionary.json", "w+")
 
