@@ -8,6 +8,9 @@ import numpy
 import sympy
 from multiset import FrozenMultiset
 
+def sublist(lst1, lst2):
+    return set(lst1) <= set(lst2)
+
 
 
 def shift(unshifted):
@@ -59,8 +62,9 @@ def cross_sum(c):
     sums = []
     for i in range(int(len(c))):
         for j in range(int(len(c))):
-            sums.append((c[j] - c[i]) % 1)
-    return sorted(sums)
+            sums.append((sympy.Rational(c[j]) - sympy.Rational(c[i])) % 1)
+    return FrozenMultiset(sorted(sums))
+
 
 
 def solve(n, all_old_dict, shifted_old_dict):
@@ -91,8 +95,10 @@ def solve(n, all_old_dict, shifted_old_dict):
         def Primitive(c):
             for l in range(2, k):
                 for d in all_solutions[l]:
-                    if set(d) <= set(c):
-                        return False
+                    for i in range(len(c)):
+                        shifted_d_list = [sympy.Rational(d[j]) + sympy.Rational(c[i]) for j in range(len(d))]
+                        if sublist(shifted_d_list,c):
+                            return False
             return True
 
         Primitive_k_TempSolutions = list(filter(Primitive, k_TempSolutions))
