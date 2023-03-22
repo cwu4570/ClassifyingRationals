@@ -98,24 +98,24 @@ def solve(n, all_old_dict, shifted_old_dict):
                             return False
             return True
 
-        Primitive_k_TempSolutions = list(filter(Primitive, k_TempSolutions))
-
         UniqueSolutions = []
-        for c in Primitive_k_TempSolutions:
+        for c in k_TempSolutions:
             if c not in UniqueSolutions:
                 UniqueSolutions.append(c)
 
+        Primitive_k_TempSolutions = list(filter(Primitive, UniqueSolutions))
+
         final_temp_solutions = []
 
-        if len(UniqueSolutions) > 0:
-            final_temp_solutions.append(UniqueSolutions[0])
+        if len(Primitive_k_TempSolutions) > 0:
+            final_temp_solutions.append(Primitive_k_TempSolutions[0])
 
         CrossSumSolutions = []
 
         for c in final_temp_solutions:
             CrossSumSolutions.append(cross_sum(c))
 
-        for c in UniqueSolutions:
+        for c in Primitive_k_TempSolutions:
             if not cross_sum(c) in CrossSumSolutions:
                 final_temp_solutions.append(c)
                 CrossSumSolutions.append(cross_sum(c))
