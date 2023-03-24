@@ -3,6 +3,7 @@ import os.path
 import time
 from itertools import permutations, product
 
+import math
 import numpy
 import sympy
 from multiset import FrozenMultiset
@@ -89,7 +90,7 @@ def solve(n, all_old_dict, shifted_old_dict):
         k_TempSolutions = k_TempSolutions + k_2_TempSolutions
 
         def Primitive(c):
-            for l in range(2, k):
+            for l in range(2, (len(c)//2) + 1):
                 for d in all_solutions[l]:
                     for i in range(len(c)):
                         shifted_d_list = [sympy.Rational(
