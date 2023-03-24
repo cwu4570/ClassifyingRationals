@@ -1,10 +1,8 @@
 import json
 import os.path
 import time
-from itertools import permutations, product
+from itertools import product
 
-import math
-import numpy
 import sympy
 from multiset import FrozenMultiset
 
@@ -111,15 +109,15 @@ def solve(n, all_old_dict, shifted_old_dict):
         if len(Primitive_k_TempSolutions) > 0:
             final_temp_solutions.append(Primitive_k_TempSolutions[0])
 
-        CrossSumSolutions = []
+        cross_sum_solutions = []
 
         for c in final_temp_solutions:
-            CrossSumSolutions.append(cross_sum(c))
+            cross_sum_solutions.append(cross_sum(c))
 
         for c in Primitive_k_TempSolutions:
-            if not cross_sum(c) in CrossSumSolutions:
+            if cross_sum(c) not in cross_sum_solutions:
                 final_temp_solutions.append(c)
-                CrossSumSolutions.append(cross_sum(c))
+                cross_sum_solutions.append(cross_sum(c))
 
         all_solutions[k] = final_temp_solutions
 
