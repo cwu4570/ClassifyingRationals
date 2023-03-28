@@ -171,3 +171,7 @@ if __name__ == "__main__":
 
     all_json_file.close()
     shifted_json_file.close()
+
+
+# for k in range(2, 21):
+#     print(len(all_solutions[k]), 'total solutions for n = ', k)
